@@ -1,0 +1,1994 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Тренажёр · Системы счисления</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&family=JetBrains+Mono:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#1e3a8a; --blue:#2563eb; --pink:#ec4899; --purple:#8b5cf6;
+  --green:#10b981; --yellow:#f59e0b; --red:#ef4444; --cyan:#06b6d4;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+
+body{
+  font-family:'Nunito',-apple-system,system-ui,sans-serif;
+  color:#1e293b; min-height:100vh;
+  display:flex;justify-content:center;
+  padding:22px 14px 60px;
+  background:
+    radial-gradient(circle at 12% 12%, #ffe0f0 0%, transparent 42%),
+    radial-gradient(circle at 88% 18%, #d4e9ff 0%, transparent 42%),
+    radial-gradient(circle at 50% 92%, #e0ffd4 0%, transparent 48%),
+    linear-gradient(135deg, #fef9e7 0%, #f5f0ff 60%, #e0f7ff 100%);
+  background-attachment:fixed;
+}
+.app{width:100%;max-width:920px}
+
+/* ===== Заголовок ===== */
+.hero{
+  display:flex;justify-content:space-between;align-items:flex-start;
+  gap:12px;margin-bottom:20px;flex-wrap:wrap;
+}
+.hero-text{flex:1;min-width:200px}
+.hero h1{
+  font-size:clamp(1.4rem,4.5vw,2.1rem);
+  font-weight:900;letter-spacing:-.6px;
+  background:linear-gradient(115deg,#ec4899 0%,#8b5cf6 45%,#06b6d4 100%);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(0 3px 8px rgba(139,92,246,.25));
+}
+.hero p{color:#64748b;margin-top:5px;font-size:.88rem;font-weight:700}
+
+.header-tools{
+  display:flex;gap:6px;flex-wrap:wrap;
+  padding:6px;
+  background:#fff;
+  border:3px solid #e0e7ff;border-radius:14px;
+  box-shadow:0 3px 0 #e0e7ff, 0 6px 16px -8px rgba(99,102,241,.25);
+}
+.tool-btn{
+  width:38px;height:38px;
+  border:2px solid transparent;border-radius:10px;
+  background:#f1f5f9;
+  font-size:1.05rem;
+  cursor:pointer;transition:.18s;
+  display:flex;align-items:center;justify-content:center;
+  opacity:.5;
+}
+.tool-btn:hover{background:#e0e7ff;transform:translateY(-1px)}
+.tool-btn.active{opacity:1;background:#dbeafe;border-color:#60a5fa}
+.tool-btn.off{opacity:.4}
+
+.timer-display{
+  display:none;
+  padding:7px 14px;
+  background:#fff;
+  border:3px solid #fde68a;border-radius:12px;
+  font-family:'JetBrains Mono',monospace;
+  font-weight:900;font-size:1rem;
+  color:#92400e;
+  box-shadow:0 3px 0 #fde68a;
+  align-items:center;gap:6px;
+  white-space:nowrap;
+}
+.timer-display.show{display:inline-flex}
+.timer-display.warn{color:#991b1b;border-color:#fca5a5;box-shadow:0 3px 0 #fca5a5;animation:pulse 1s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.65}}
+
+/* ===== Табы ===== */
+.tabs{
+  display:flex;gap:6px;padding:6px;
+  background:#fff;border:3px solid #e0e7ff;border-radius:16px;
+  margin-bottom:14px;
+  box-shadow:0 4px 0 #e0e7ff, 0 8px 22px -10px rgba(99,102,241,.3);
+}
+.tab{
+  flex:1;padding:10px 12px;border:0;border-radius:11px;
+  background:transparent;color:#94a3b8;
+  font:inherit;font-weight:800;font-size:.86rem;cursor:pointer;
+  transition:.2s;
+}
+.tab:hover{color:#4f46e5;background:#f8fafc}
+.tab.active{
+  color:#fff;
+  background:linear-gradient(135deg,#ec4899,#8b5cf6 55%,#06b6d4);
+  box-shadow:0 4px 12px -3px rgba(139,92,246,.55);
+}
+
+.view{display:none;animation:fade .3s ease}
+.view.active{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+/* ===== Управление ===== */
+.controls{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+.group{
+  display:flex;align-items:center;gap:5px;flex-wrap:wrap;
+  background:#fff;border:3px solid #e0e7ff;border-radius:14px;
+  padding:6px 10px;
+  box-shadow:0 3px 0 #e0e7ff, 0 6px 16px -8px rgba(99,102,241,.25);
+}
+.group>.lbl{
+  color:#94a3b8;font-size:.68rem;font-weight:800;
+  text-transform:uppercase;letter-spacing:.7px;margin-right:3px;
+}
+.chip{
+  border:2px solid transparent;background:#f1f5f9;
+  color:#64748b;font:inherit;font-size:.85rem;font-weight:800;
+  padding:6px 12px;border-radius:8px;cursor:pointer;transition:.18s;
+  min-width:34px;text-align:center;
+}
+.chip:hover{background:#e0e7ff;color:#4f46e5;transform:translateY(-1px)}
+.chip.active{
+  color:#fff;
+  background:linear-gradient(135deg,#60a5fa,#8b5cf6);
+  box-shadow:0 4px 12px -3px rgba(139,92,246,.55);
+  transform:translateY(-1px);
+}
+.chip[data-mode="fromDecimal"].active{background:linear-gradient(135deg,#ec4899,#8b5cf6)}
+.chip[data-mode="toDecimal"].active{background:linear-gradient(135deg,#06b6d4,#10b981)}
+.chip[data-mode="grouping"].active{background:linear-gradient(135deg,#f59e0b,#ef4444)}
+.chip[data-base="2"].active{background:linear-gradient(135deg,#38bdf8,#2563eb)}
+.chip[data-base="8"].active{background:linear-gradient(135deg,#4ade80,#10b981)}
+.chip[data-base="16"].active{background:linear-gradient(135deg,#fbbf24,#f97316)}
+.chip[data-base="random"].active{background:linear-gradient(135deg,#ec4899,#8b5cf6 55%,#06b6d4)}
+.chip[data-level="easy"].active{background:linear-gradient(135deg,#4ade80,#10b981)}
+.chip[data-level="medium"].active{background:linear-gradient(135deg,#fbbf24,#f97316)}
+.chip[data-level="hard"].active{background:linear-gradient(135deg,#fb7185,#dc2626)}
+
+/* ===== Карточка ===== */
+.card{
+  background:#fff;border:4px solid #e0e7ff;border-radius:22px;
+  padding:22px;
+  box-shadow:0 8px 0 #e0e7ff, 0 20px 40px -20px rgba(99,102,241,.35);
+}
+.card-head{
+  display:flex;justify-content:space-between;align-items:center;
+  margin-bottom:14px;flex-wrap:wrap;gap:8px;
+}
+.task-num{
+  color:#94a3b8;font-size:.76rem;font-weight:800;
+  letter-spacing:.6px;text-transform:uppercase;
+}
+.badge{
+  font-size:.72rem;font-weight:900;letter-spacing:.5px;text-transform:uppercase;
+  padding:6px 13px;border-radius:999px;color:#fff;
+  background:linear-gradient(135deg,#60a5fa,#8b5cf6);
+  box-shadow:0 4px 10px -3px rgba(139,92,246,.5);
+}
+.badge.green{
+  background:linear-gradient(135deg,#4ade80,#10b981);
+  box-shadow:0 4px 10px -3px rgba(16,185,129,.5);
+}
+.badge.orange{
+  background:linear-gradient(135deg,#fbbf24,#f97316);
+  box-shadow:0 4px 10px -3px rgba(249,115,22,.5);
+}
+.task-instruction{
+  font-size:1rem;line-height:1.55;margin-bottom:16px;
+  padding:13px 17px;border-radius:14px;
+  background:linear-gradient(135deg,#fef3c7,#fce7f3);
+  border:2px dashed #f59e0b;
+  font-weight:700;color:#78350f;
+}
+.task-instruction b{
+  font-size:1.12em;color:#9d174d;
+  font-family:'JetBrains Mono',monospace;
+  padding:2px 8px;border-radius:8px;
+  background:rgba(255,255,255,.6);
+}
+
+/* ===== Столбики (10 → N) ===== */
+.steps-container{display:flex;flex-direction:column;gap:16px;margin-bottom:14px}
+.stolbik{
+  display:flex;align-items:flex-start;padding:18px 22px;
+  background:#fff;border:3px solid #bfdbfe;border-radius:18px;
+  box-shadow:0 6px 0 #bfdbfe, 0 12px 26px -12px rgba(59,130,246,.3);
+  transition:all .3s ease;position:relative;
+}
+.stolbik.appearing{animation:popIn .45s cubic-bezier(.34,1.56,.64,1);}
+@keyframes popIn{
+  0%{opacity:0;transform:scale(.85) translateY(-14px)}
+  100%{opacity:1;transform:scale(1) translateY(0)}
+}
+.stolbik.correct{
+  border-color:#86efac;
+  box-shadow:0 6px 0 #86efac, 0 12px 26px -12px rgba(16,185,129,.35);
+  background:linear-gradient(135deg,#f0fdf4,#fff);
+}
+.stolbik.wrong{
+  border-color:#fca5a5;
+  box-shadow:0 6px 0 #fca5a5, 0 12px 26px -12px rgba(239,68,68,.35);
+  background:linear-gradient(135deg,#fef2f2,#fff);
+}
+.step-badge{
+  position:absolute;top:-12px;left:20px;
+  background:linear-gradient(135deg,#8b5cf6,#ec4899);
+  color:#fff;font-size:.7rem;font-weight:900;
+  letter-spacing:.8px;text-transform:uppercase;
+  padding:4px 12px;border-radius:999px;
+  box-shadow:0 4px 10px -3px rgba(139,92,246,.5);
+}
+.stolbik.correct .step-badge{
+  background:linear-gradient(135deg,#10b981,#059669);
+  box-shadow:0 4px 10px -3px rgba(16,185,129,.5);
+}
+.stolbik.wrong .step-badge{
+  background:linear-gradient(135deg,#ef4444,#dc2626);
+  box-shadow:0 4px 10px -3px rgba(239,68,68,.5);
+}
+.left-col{display:flex;flex-direction:column;align-items:flex-end;padding-right:16px;}
+.right-col{display:flex;flex-direction:column;align-items:flex-start;padding-left:18px;border-left:4px solid var(--ink);}
+.cell{
+  height:52px;display:flex;align-items:center;
+  font-family:'JetBrains Mono',Consolas,monospace;
+  font-size:1.65rem;font-weight:800;
+  color:var(--ink);letter-spacing:2px;
+}
+.left-col .cell{justify-content:flex-end}
+.right-col .cell{justify-content:flex-start}
+.hline{height:4px;background:var(--ink);border-radius:2px;align-self:stretch;width:100%;min-width:120px;}
+.divisor-cell{color:var(--blue);font-size:1.75rem;font-weight:900;}
+.product-text{
+  color:var(--purple);font-family:'JetBrains Mono',monospace;
+  font-size:1.5rem;font-weight:800;letter-spacing:2px;
+  display:inline-block;min-width:20px;
+}
+.product-text:not(:empty){animation:popHint .4s cubic-bezier(.34,1.56,.64,1);}
+@keyframes popHint{
+  0%{opacity:0;transform:scale(.4)}
+  60%{transform:scale(1.15)}
+  100%{opacity:1;transform:scale(1)}
+}
+.input-block{display:flex;flex-direction:column;align-items:center;gap:2px;}
+.mini-label{
+  font-size:.62rem;font-weight:900;letter-spacing:.8px;
+  text-transform:uppercase;color:#94a3b8;padding:0 2px;white-space:nowrap;
+}
+.mini-label.q-color{color:#8b5cf6}
+.mini-label.r-color{color:#ec4899}
+
+/* ===== Общие стили инпутов ===== */
+.quotient-input,.remainder-input,.weight-input,.term-input,
+.group-digit-input,.bit-input,.final-input,.sum-input{
+  font-family:'JetBrains Mono',monospace;
+  font-weight:900;text-align:center;
+  color:#7c2d12;background:#fef3c7;
+  border:3px dashed #f59e0b;border-radius:11px;
+  outline:none;transition:all .2s;
+  box-shadow:inset 0 1px 4px rgba(0,0,0,.06);
+}
+.quotient-input,.remainder-input{font-size:1.45rem;padding:2px 8px;height:46px;letter-spacing:2px;}
+.quotient-input{width:96px}
+.remainder-input{width:70px;text-transform:uppercase}
+
+.quotient-input::placeholder,.remainder-input::placeholder,
+.weight-input::placeholder,.term-input::placeholder,
+.group-digit-input::placeholder,.bit-input::placeholder,
+.final-input::placeholder,.sum-input::placeholder{color:#fbbf24;font-weight:900;}
+
+.quotient-input:focus,.remainder-input:focus,.weight-input:focus,.term-input:focus,
+.group-digit-input:focus,.bit-input:focus,.final-input:focus,.sum-input:focus{
+  border-style:solid;border-color:var(--purple);
+  background:#ede9fe;color:var(--purple);
+  box-shadow:0 0 0 4px rgba(139,92,246,.18);
+}
+.quotient-input.ok,.remainder-input.ok,.weight-input.ok,.term-input.ok,
+.group-digit-input.ok,.bit-input.ok,.final-input.ok,.sum-input.ok{
+  border-style:solid;border-color:var(--green);
+  background:#d1fae5;color:#065f46;box-shadow:0 3px 0 #6ee7b7;
+}
+.quotient-input.err,.remainder-input.err,.weight-input.err,.term-input.err,
+.group-digit-input.err,.bit-input.err,.final-input.err,.sum-input.err{
+  border-style:solid;border-color:var(--red);
+  background:#fee2e2;color:#991b1b;box-shadow:0 3px 0 #fca5a5;
+  animation:shake .4s;
+}
+@keyframes shake{
+  0%,100%{transform:translateX(0)}
+  25%{transform:translateX(-4px)}
+  75%{transform:translateX(4px)}
+}
+.quotient-input:disabled,.remainder-input:disabled,.weight-input:disabled,
+.term-input:disabled,.group-digit-input:disabled,.bit-input:disabled,
+.final-input:disabled,.sum-input:disabled{opacity:1;cursor:default;}
+
+/* ===== Кнопка добавить шаг ===== */
+.add-step-row{display:none;justify-content:center;margin-bottom:14px;}
+.add-step-row.show{display:flex}
+.add-step-btn{
+  font:inherit;font-weight:900;font-size:.95rem;
+  padding:12px 24px;border-radius:14px;border:0;
+  cursor:pointer;transition:.15s;color:#fff;
+  background:linear-gradient(135deg,#8b5cf6,#ec4899);
+  box-shadow:0 6px 0 #7c3aed, 0 12px 22px -8px rgba(139,92,246,.55);
+  display:inline-flex;align-items:center;gap:8px;
+}
+.add-step-btn:hover{transform:translateY(-2px);box-shadow:0 8px 0 #7c3aed, 0 16px 28px -8px rgba(139,92,246,.65);}
+.add-step-btn:active{transform:translateY(3px);box-shadow:0 3px 0 #7c3aed, 0 6px 14px -6px rgba(139,92,246,.55);}
+
+/* ===== Блок ответа ===== */
+.answer-block{
+  display:none;margin-top:8px;padding:18px 20px;
+  border-radius:16px;
+  background:linear-gradient(135deg,#faf5ff,#fdf2f8);
+  border:3px solid #e9d5ff;box-shadow:0 5px 0 #e9d5ff;
+}
+.answer-block.show{display:block;animation:popIn .5s cubic-bezier(.34,1.56,.64,1);}
+.answer-hint{
+  font-size:.9rem;font-weight:800;color:#7c3aed;
+  margin-bottom:12px;display:flex;align-items:center;gap:8px;
+}
+.answer-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+.answer-row label{font-weight:900;font-size:.98rem;color:#6d28d9;}
+.final-input{
+  flex:1;min-width:140px;max-width:280px;
+  font-size:1.4rem;letter-spacing:3px;text-transform:uppercase;
+  text-align:center;padding:12px 16px;height:auto;
+}
+.base-tag{
+  font-size:.78rem;font-weight:900;color:#7c3aed;
+  background:#fff;border:2px solid #c4b5fd;
+  padding:10px 13px;border-radius:11px;white-space:nowrap;
+}
+.base-tag b{color:#6d28d9;font-family:'JetBrains Mono',monospace;}
+
+/* ===== Режим N → 10 ===== */
+.weights-container{
+  display:flex;flex-wrap:wrap;justify-content:center;gap:12px;
+  margin-bottom:16px;padding:20px 16px;
+  background:
+    linear-gradient(rgba(147,197,253,.12) 1px, transparent 1px) 0 0 / 100% 22px,
+    linear-gradient(90deg, rgba(147,197,253,.12) 1px, transparent 1px) 0 0 / 22px 100%,
+    #f8fafc;
+  border:3px solid #bfdbfe;border-radius:18px;
+  box-shadow:inset 0 2px 8px rgba(99,102,241,.08), 0 6px 0 #bfdbfe;
+}
+.digit-block{
+  display:flex;flex-direction:column;gap:5px;
+  padding:11px 13px 13px;background:#fff;
+  border:3px solid #e0e7ff;border-radius:14px;
+  box-shadow:0 4px 0 #e0e7ff;min-width:88px;align-items:center;
+  transition:.25s;
+  animation:popIn .4s cubic-bezier(.34,1.56,.64,1) backwards;
+}
+.digit-block.correct{
+  border-color:#86efac;box-shadow:0 4px 0 #86efac;
+  background:linear-gradient(135deg,#f0fdf4,#fff);
+}
+.digit-block.wrong{
+  border-color:#fca5a5;box-shadow:0 4px 0 #fca5a5;
+  background:linear-gradient(135deg,#fef2f2,#fff);
+}
+.block-row{display:flex;flex-direction:column;align-items:center;gap:1px;width:100%;}
+.mini-label2{
+  font-size:.58rem;font-weight:900;letter-spacing:.6px;
+  text-transform:uppercase;color:#94a3b8;white-space:nowrap;
+}
+.mini-label2.pos{color:#8b5cf6}
+.mini-label2.dig{color:#ec4899}
+.mini-label2.w{color:#06b6d4}
+.mini-label2.t{color:#10b981}
+.pos-value{font-family:'JetBrains Mono',monospace;font-size:1rem;font-weight:900;color:#8b5cf6;}
+.digit-value{font-family:'JetBrains Mono',monospace;font-size:1.9rem;font-weight:900;color:#1e3a8a;letter-spacing:2px;}
+.weight-input,.term-input{width:72px;height:40px;font-size:1.1rem;}
+.sum-block{
+  display:flex;align-items:center;justify-content:center;gap:14px;
+  flex-wrap:wrap;padding:18px 20px;border-radius:16px;
+  background:linear-gradient(135deg,#faf5ff,#fdf2f8);
+  border:3px solid #e9d5ff;box-shadow:0 5px 0 #e9d5ff;
+}
+.sum-block label{font-weight:900;font-size:1rem;color:#6d28d9;}
+.sum-input{
+  min-width:150px;max-width:220px;height:52px;
+  font-size:1.4rem;letter-spacing:2px;padding:0 16px;
+}
+.sum-hint{
+  font-size:.74rem;font-weight:800;color:#94a3b8;
+  padding:6px 10px;border-radius:8px;background:#fff;
+  border:2px solid #e0e7ff;
+}
+
+/* ===== Режим группировки ===== */
+.grouping-container{
+  padding:20px 18px;border-radius:18px;
+  background:
+    linear-gradient(rgba(147,197,253,.12) 1px, transparent 1px) 0 0 / 100% 22px,
+    linear-gradient(90deg, rgba(147,197,253,.12) 1px, transparent 1px) 0 0 / 22px 100%,
+    #f8fafc;
+  border:3px solid #bfdbfe;
+  box-shadow:inset 0 2px 8px rgba(99,102,241,.08), 0 6px 0 #bfdbfe;
+  margin-bottom:16px;
+}
+.grouping-row{
+  display:flex;flex-wrap:wrap;justify-content:center;align-items:flex-end;
+  gap:10px;margin-bottom:14px;
+}
+.grouping-row:last-child{margin-bottom:0}
+
+.grouping-label{
+  width:100%;text-align:center;
+  font-size:.72rem;font-weight:900;
+  text-transform:uppercase;letter-spacing:.7px;
+  color:#94a3b8;margin-bottom:8px;
+}
+
+.source-bits{
+  display:flex;flex-wrap:wrap;justify-content:center;
+  gap:4px;padding:12px 14px;
+  background:#fff;
+  border:3px solid #dbeafe;border-radius:14px;
+  box-shadow:0 4px 0 #dbeafe;
+}
+.source-bit{
+  display:inline-flex;align-items:center;justify-content:center;
+  min-width:32px;height:40px;padding:0 6px;
+  font-family:'JetBrains Mono',monospace;
+  font-size:1.4rem;font-weight:900;
+  color:#1e40af;
+  background:linear-gradient(135deg,#dbeafe,#bfdbfe);
+  border-radius:8px;
+}
+
+.source-digits{
+  display:flex;flex-wrap:wrap;justify-content:center;
+  gap:8px;padding:12px 14px;
+  background:#fff;
+  border:3px solid #fde68a;border-radius:14px;
+  box-shadow:0 4px 0 #fde68a;
+}
+.source-digit{
+  display:inline-flex;align-items:center;justify-content:center;
+  min-width:40px;height:44px;padding:0 10px;
+  font-family:'JetBrains Mono',monospace;
+  font-size:1.5rem;font-weight:900;
+  color:#92400e;
+  background:linear-gradient(135deg,#fef3c7,#fde68a);
+  border-radius:9px;
+}
+
+.groups-row{
+  display:flex;flex-wrap:wrap;justify-content:center;
+  align-items:flex-end;gap:12px;
+}
+.group-card{
+  display:flex;flex-direction:column;align-items:center;gap:6px;
+  padding:10px 12px 12px;
+  background:#fff;
+  border:3px solid #c4b5fd;border-radius:12px;
+  box-shadow:0 4px 0 #c4b5fd;
+  transition:.25s;
+  animation:popIn .4s cubic-bezier(.34,1.56,.64,1) backwards;
+}
+.group-card.correct{
+  border-color:#86efac;box-shadow:0 4px 0 #86efac;
+  background:linear-gradient(135deg,#f0fdf4,#fff);
+}
+.group-card.wrong{
+  border-color:#fca5a5;box-shadow:0 4px 0 #fca5a5;
+  background:linear-gradient(135deg,#fef2f2,#fff);
+}
+.group-bits{
+  font-family:'JetBrains Mono',monospace;
+  font-size:1.1rem;font-weight:900;
+  color:#6d28d9;
+  letter-spacing:3px;
+  padding:5px 10px;
+  background:#ede9fe;
+  border-radius:7px;
+}
+.group-arrow{
+  font-size:.9rem;color:#a78bfa;
+}
+.group-digit-input{
+  width:52px;height:44px;font-size:1.3rem;
+  text-transform:uppercase;
+}
+
+.bit-cards{
+  display:flex;flex-wrap:wrap;justify-content:center;
+  align-items:flex-end;gap:12px;
+}
+.bit-card{
+  display:flex;flex-direction:column;align-items:center;gap:6px;
+  padding:10px 12px 12px;
+  background:#fff;
+  border:3px solid #fdba74;border-radius:12px;
+  box-shadow:0 4px 0 #fdba74;
+  transition:.25s;
+  animation:popIn .4s cubic-bezier(.34,1.56,.64,1) backwards;
+}
+.bit-card.correct{
+  border-color:#86efac;box-shadow:0 4px 0 #86efac;
+  background:linear-gradient(135deg,#f0fdf4,#fff);
+}
+.bit-card.wrong{
+  border-color:#fca5a5;box-shadow:0 4px 0 #fca5a5;
+  background:linear-gradient(135deg,#fef2f2,#fff);
+}
+.bit-card-digit{
+  font-family:'JetBrains Mono',monospace;
+  font-size:1.6rem;font-weight:900;
+  color:#c2410c;
+  padding:4px 12px;
+  background:#ffedd5;
+  border-radius:7px;
+}
+.bit-input{
+  width:74px;height:44px;font-size:1.05rem;
+  letter-spacing:3px;
+}
+
+/* ===== Действия ===== */
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+.btn{
+  font:inherit;font-weight:900;font-size:.92rem;
+  padding:13px 24px;border-radius:14px;border:0;
+  cursor:pointer;transition:.15s;
+  display:inline-flex;align-items:center;gap:8px;
+}
+.btn.check{
+  color:#fff;
+  background:linear-gradient(135deg,#10b981,#059669);
+  box-shadow:0 6px 0 #047857, 0 12px 22px -8px rgba(16,185,129,.5);
+  font-size:1.02rem;padding:15px 28px;
+}
+.btn.check:hover{transform:translateY(-2px);box-shadow:0 8px 0 #047857, 0 16px 28px -8px rgba(16,185,129,.6);}
+.btn.check:active{transform:translateY(3px);box-shadow:0 3px 0 #047857, 0 6px 14px -6px rgba(16,185,129,.5);}
+.btn.ghost{
+  color:#64748b;background:#fff;border:3px solid #e2e8f0;
+  box-shadow:0 4px 0 #e2e8f0;
+}
+.btn.ghost:hover{color:#4f46e5;border-color:#c7d2fe;box-shadow:0 4px 0 #c7d2fe;transform:translateY(-1px);}
+.btn.ghost:active{transform:translateY(2px);box-shadow:0 1px 0 #c7d2fe}
+
+/* ===== Фидбэк ===== */
+.global-feedback{
+  display:none;margin-top:16px;padding:14px 20px;
+  border-radius:14px;font-weight:900;font-size:.98rem;
+  text-align:center;animation:popIn .3s ease;
+}
+.global-feedback.show{display:block}
+.global-feedback.ok{
+  background:linear-gradient(135deg,#d1fae5,#a7f3d0);
+  color:#065f46;border:3px solid #6ee7b7;box-shadow:0 4px 0 #6ee7b7;
+}
+.global-feedback.bad{
+  background:linear-gradient(135deg,#fee2e2,#fecaca);
+  color:#991b1b;border:3px solid #fca5a5;box-shadow:0 4px 0 #fca5a5;
+}
+.global-feedback.warn{
+  background:linear-gradient(135deg,#fef3c7,#fde68a);
+  color:#92400e;border:3px solid #fbbf24;box-shadow:0 4px 0 #fbbf24;
+}
+
+/* ===== Статистика ===== */
+.stats{
+  display:flex;flex-wrap:wrap;gap:10px;align-items:center;
+  margin-top:14px;padding:14px;background:#fff;
+  border:3px solid #e0e7ff;border-radius:18px;
+  box-shadow:0 6px 0 #e0e7ff, 0 10px 24px -12px rgba(99,102,241,.3);
+}
+.stat{flex:1;min-width:66px;text-align:center;padding:4px 2px}
+.stat-val{font-size:1.4rem;font-weight:900;line-height:1.1}
+.stat:nth-child(1) .stat-val{color:#2563eb}
+.stat:nth-child(2) .stat-val{color:#10b981}
+.stat:nth-child(3) .stat-val{color:#ef4444}
+.stat:nth-child(4) .stat-val{color:#f59e0b;font-size:1.1rem}
+.stat-lbl{
+  font-size:.64rem;color:#94a3b8;
+  text-transform:uppercase;letter-spacing:.6px;margin-top:4px;
+  font-weight:800;
+}
+.btn.tiny{
+  padding:7px 13px;font-size:.74rem;
+  color:#64748b;background:#f1f5f9;border:0;border-radius:9px;
+  box-shadow:0 3px 0 #e2e8f0;
+  font-weight:800;cursor:pointer;font-family:inherit;
+}
+.btn.tiny:hover{color:#4f46e5;background:#e0e7ff;box-shadow:0 3px 0 #c7d2fe}
+.btn.tiny:active{transform:translateY(2px);box-shadow:0 1px 0 #c7d2fe}
+
+/* ===== Теория ===== */
+.theory-card{
+  background:#fff;border:3px solid #e0e7ff;border-radius:20px;
+  padding:20px;margin-bottom:14px;
+  box-shadow:0 6px 0 #e0e7ff, 0 12px 26px -14px rgba(99,102,241,.3);
+}
+.theory-card h2{
+  font-size:1rem;margin-bottom:11px;color:#1e293b;
+  display:flex;align-items:center;gap:10px;font-weight:900;
+}
+.theory-card h2::before{
+  content:"";width:5px;height:20px;border-radius:3px;
+  background:linear-gradient(180deg,#ec4899,#8b5cf6);
+}
+.theory-card p{color:#475569;font-size:.9rem;line-height:1.7;margin-bottom:9px;font-weight:600;}
+.theory-card p:last-child{margin-bottom:0}
+.theory-card code{
+  font-family:'JetBrains Mono',monospace;
+  background:#dbeafe;color:#1e40af;
+  padding:2px 7px;border-radius:6px;font-size:.85em;font-weight:800;
+}
+.formula{
+  font-family:'JetBrains Mono',monospace;
+  background:linear-gradient(135deg,#f8fafc,#eff6ff);
+  border:2px dashed #c7d2fe;border-radius:12px;
+  padding:13px 16px;margin:10px 0;
+  color:#334155;font-size:.83rem;line-height:2;
+  overflow-x:auto;font-weight:700;
+}
+.formula em{color:var(--pink);font-style:normal;font-weight:900}
+.formula .hl{color:#059669;font-weight:900;background:#d1fae5;padding:2px 8px;border-radius:6px;}
+.formula .dim{color:#94a3b8}
+.formula .last{color:#7c3aed;font-weight:900}
+.formula .w{color:#06b6d4;font-weight:900}
+
+table{
+  width:100%;border-collapse:separate;border-spacing:0;
+  font-size:.84rem;font-family:'JetBrains Mono',monospace;
+  overflow:hidden;border-radius:12px;border:2px solid #e0e7ff;
+}
+thead th{
+  background:linear-gradient(135deg,#a78bfa,#7c3aed);
+  color:#fff;padding:9px 8px;font-size:.72rem;
+  letter-spacing:.6px;text-transform:uppercase;font-weight:900;
+}
+tbody td{
+  padding:8px;text-align:center;color:#334155;
+  border-top:1px solid #e0e7ff;font-weight:700;
+}
+tbody tr:nth-child(odd){background:#fafbff}
+tbody tr:hover{background:#fef3c7}
+
+/* ===== Печать ===== */
+@media print{
+  body{background:#fff;padding:0}
+  .header-tools,.tabs,.controls,.actions,.stats,.hero p,
+  .add-step-row,.tool-btn,.btn{display:none !important}
+  .card{box-shadow:none;border-width:2px;padding:0}
+  .stolbik,.digit-block,.group-card,.bit-card{
+    box-shadow:none !important;animation:none !important;
+    page-break-inside:avoid;
+  }
+  .global-feedback{display:none !important}
+  .hero h1{-webkit-text-fill-color:#1e293b !important;color:#1e293b !important}
+}
+
+@media(max-width:600px){
+  .card{padding:16px;border-radius:18px}
+  .group{width:100%}
+  .stolbik{padding:14px 14px;border-radius:14px}
+  .cell{height:44px;font-size:1.3rem;letter-spacing:1.5px}
+  .divisor-cell{font-size:1.45rem}
+  .quotient-input{width:72px;font-size:1.15rem;height:40px;padding:2px 4px}
+  .remainder-input{width:54px;font-size:1.15rem;height:40px;padding:2px 4px}
+  .mini-label{font-size:.58rem}
+  .left-col{padding-right:10px}
+  .right-col{padding-left:12px;border-left-width:3px}
+  .hline{min-width:90px}
+  .stat{min-width:52px}
+  .stat-val{font-size:1.2rem}
+  .digit-block{min-width:72px;padding:9px 10px 11px}
+  .digit-value{font-size:1.55rem}
+  .weight-input,.term-input{width:58px;height:38px;font-size:.95rem}
+  .mini-label2{font-size:.52rem}
+  .pos-value{font-size:.9rem}
+  .source-bit{min-width:26px;height:34px;font-size:1.2rem}
+  .source-digit{min-width:34px;height:38px;font-size:1.3rem}
+  .group-digit-input{width:44px;height:40px;font-size:1.15rem}
+  .bit-input{width:60px;height:40px;font-size:.95rem}
+  .group-bits{font-size:.95rem;letter-spacing:2px}
+  .bit-card-digit{font-size:1.3rem}
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header class="hero">
+    <div class="hero-text">
+      <h1>🧮 Системы счисления</h1>
+      <p>Интерактивный тренажёр · перевод чисел</p>
+    </div>
+    <div class="header-tools">
+      <button class="tool-btn active" id="sound-btn" title="Звук: вкл">🔊</button>
+      <button class="tool-btn" id="timer-btn" title="Таймер: выкл">⏱</button>
+      <button class="tool-btn" id="print-btn" title="Печать">🖨</button>
+      <button class="tool-btn" id="export-btn" title="Экспорт статистики">📥</button>
+    </div>
+  </header>
+
+  <div class="timer-display" id="timer-display">⏱ <span id="timer-text">00:00.0</span></div>
+
+  <nav class="tabs">
+    <button class="tab active" data-view="trainer">✏️ Тренажёр</button>
+    <button class="tab" data-view="theory">📚 Теория</button>
+  </nav>
+
+  <section class="view active" id="view-trainer">
+
+    <div class="controls">
+      <div class="group">
+        <span class="lbl">Режим</span>
+        <button class="chip active" data-mode="fromDecimal">10 → N</button>
+        <button class="chip" data-mode="toDecimal">N → 10</button>
+        <button class="chip" data-mode="grouping">2 ↔ 8 ↔ 16</button>
+      </div>
+      <div class="group">
+        <span class="lbl">Основание</span>
+        <button class="chip active" data-base="2">2</button>
+        <button class="chip" data-base="8">8</button>
+        <button class="chip" data-base="16">16</button>
+        <button class="chip" data-base="random">?</button>
+      </div>
+      <div class="group">
+        <span class="lbl">Уровень</span>
+        <button class="chip active" data-level="easy">Лёгкий</button>
+        <button class="chip" data-level="medium">Средний</button>
+        <button class="chip" data-level="hard">Сложный</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <span class="task-num" id="task-number">Задача 1</span>
+        <span class="badge" id="task-badge">Основание 2</span>
+      </div>
+
+      <div class="task-instruction" id="task-instruction"></div>
+
+      <!-- 10 → N -->
+      <div id="mode-from-decimal">
+        <div class="steps-container" id="steps"></div>
+        <div class="add-step-row" id="add-step-row">
+          <button class="add-step-btn" id="add-step-btn">➕ Добавить следующий шаг</button>
+        </div>
+        <div class="answer-block" id="answer-block">
+          <div class="answer-hint">⬆️ Первая цифра — последнее частное, далее остатки <b>снизу вверх</b>:</div>
+          <div class="answer-row">
+            <label>Ответ:</label>
+            <input type="text" id="final-answer" class="final-input" autocomplete="off" spellcheck="false" placeholder="введите число">
+            <span class="base-tag">осн. <b id="final-base">2</b></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- N → 10 -->
+      <div id="mode-to-decimal" style="display:none">
+        <div class="weights-container" id="weights-container"></div>
+        <div class="sum-block">
+          <label>Сумма:</label>
+          <input type="text" id="sum-input" class="sum-input" autocomplete="off" spellcheck="false" inputmode="numeric" placeholder="?">
+          <span class="sum-hint">это и есть ответ в 10-й системе</span>
+        </div>
+      </div>
+
+      <!-- Группировка -->
+      <div id="mode-grouping" style="display:none">
+        <div class="grouping-container" id="grouping-container"></div>
+        <div class="answer-block show" id="grouping-answer-block" style="margin-top:14px">
+          <div class="answer-hint" id="grouping-hint">Итоговый ответ:</div>
+          <div class="answer-row">
+            <label>Ответ:</label>
+            <input type="text" id="grouping-answer" class="final-input" autocomplete="off" spellcheck="false" placeholder="введите число">
+            <span class="base-tag">осн. <b id="grouping-base-tag">8</b></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="global-feedback" id="global-feedback"></div>
+
+      <div class="actions">
+        <button class="btn check" id="check-btn">✓ Проверить всё</button>
+        <button class="btn ghost" id="new-task-btn">🔄 Новая задача</button>
+      </div>
+    </div>
+
+    <div class="stats">
+      <div class="stat"><div class="stat-val" id="st-solved">0</div><div class="stat-lbl">Решено</div></div>
+      <div class="stat"><div class="stat-val" id="st-perfect">0</div><div class="stat-lbl">Без ошибок</div></div>
+      <div class="stat"><div class="stat-val" id="st-errors">0</div><div class="stat-lbl">Ошибок</div></div>
+      <div class="stat"><div class="stat-val" id="st-best">—</div><div class="stat-lbl">Лучшее время</div></div>
+      <button class="btn tiny" id="reset-btn">Сброс</button>
+    </div>
+  </section>
+
+  <section class="view" id="view-theory">
+    <div class="theory-card">
+      <h2>Перевод из десятичной в любую (через деление)</h2>
+      <p>Последовательно делим число на основание новой системы. Делим до тех пор, пока очередное частное не станет <b>меньше основания</b> — оно станет старшей цифрой ответа. Остатки читаются <b>снизу вверх</b>.</p>
+      <div class="formula">
+        Делимое ÷ Основание = Частное, остаток<br>
+        ... пока делимое <em>≥</em> основания<br>
+        <span class="hl">Ответ = последнее частное + остатки снизу вверх</span>
+      </div>
+    </div>
+
+    <div class="theory-card">
+      <h2>Пример: 45 → двоичная</h2>
+      <div class="formula">
+        45 ÷ 2 = 22, остаток <em>1</em><br>
+        22 ÷ 2 = 11, остаток <em>0</em><br>
+        11 ÷ 2 = &nbsp;5, остаток <em>1</em><br>
+        &nbsp;5 ÷ 2 = &nbsp;2, остаток <em>1</em><br>
+        &nbsp;2 ÷ 2 = &nbsp;1, остаток <em>0</em><br>
+        <span class="dim">1 &lt; 2, останавливаемся.</span><br>
+        Последнее частное = <span class="last">1</span>, остатки снизу вверх: 0,1,1,0,1<br>
+        Ответ: <span class="hl">101101</span><sub>2</sub>
+      </div>
+    </div>
+
+    <div class="theory-card">
+      <h2>Перевод в десятичную (через разряды)</h2>
+      <p>1. Нумеруем разряды справа налево, начиная с 0.<br>
+      2. Находим вес каждого разряда: <code>основание<sup>разряд</sup></code>.<br>
+      3. Умножаем цифру на вес.<br>
+      4. Складываем все значения.</p>
+      <div class="formula">
+        Число = <em>d<sub>n−1</sub></em>·q<sup>n−1</sup> + … + <em>d<sub>1</sub></em>·q<sup>1</sup> + <em>d<sub>0</sub></em>·q<sup>0</sup>
+      </div>
+    </div>
+
+    <div class="theory-card">
+      <h2>Пример: 1011₂ → десятичная</h2>
+      <div class="formula">
+        Разряды: <span class="dim">3, 2, 1, 0</span><br>
+        Веса: <span class="w">8, 4, 2, 1</span><br>
+        Значения: 1·8 + 0·4 + 1·2 + 1·1 = 8+0+2+1<br>
+        = <span class="hl">11</span><sub>10</sub>
+      </div>
+    </div>
+
+    <div class="theory-card">
+      <h2>Группировка битов: 2 ↔ 8, 2 ↔ 16</h2>
+      <p><b>2 → 8:</b> группируем биты справа налево по <b>3</b> (при необходимости слева дописываем нули). Каждая тройка — одна восьмеричная цифра.</p>
+      <p><b>2 → 16:</b> то же, но группы по <b>4</b> бита.</p>
+      <p><b>Обратно:</b> каждая цифра заменяется на 3 (для 8) или 4 (для 16) бита. Ведущие нули в старшем разряде можно опустить.</p>
+      <div class="formula">
+        1011010<sub>2</sub> → 001 011 010 → <span class="hl">132</span><sub>8</sub><br>
+        1011010<sub>2</sub> → 0101 1010 → <span class="hl">5A</span><sub>16</sub>
+      </div>
+    </div>
+
+    <div class="theory-card">
+      <h2>Таблица соответствия</h2>
+      <table>
+        <thead><tr><th>10</th><th>2</th><th>8</th><th>16</th></tr></thead>
+        <tbody id="conv-table-body"></tbody>
+      </table>
+    </div>
+  </section>
+</div>
+
+<script>
+/* ============================================================
+   КОНСТАНТЫ
+   ============================================================ */
+const DIGITS = '0123456789ABCDEF';
+const BASES  = [2, 8, 16];
+const STORAGE_KEY = 'num-systems-trainer-v1';
+
+const LEVEL_RANGES = {
+  easy:   { min: 2,   max: 31   },
+  medium: { min: 16,  max: 255  },
+  hard:   { min: 256, max: 4095 },
+};
+const LENGTH_RANGES = {
+  easy:   [2, 3],
+  medium: [3, 4],
+  hard:   [4, 5],
+};
+
+const randInt = (a, b) => Math.floor(Math.random() * (b - a + 1)) + a;
+const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+const $ = id => document.getElementById(id);
+
+function getBaseName(base) {
+  return { 2: 'двоичную', 8: 'восьмеричную', 16: 'шестнадцатеричную' }[base];
+}
+function getBaseNameFrom(base) {
+  return { 2: 'двоичной', 8: 'восьмеричной', 16: 'шестнадцатеричной' }[base];
+}
+
+/* ============================================================
+   ЗВУК (Web Audio API)
+   ============================================================ */
+let audioCtx = null;
+function ensureAudio() {
+  if (!audioCtx) {
+    try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+    catch(e) { audioCtx = null; }
+  }
+  return audioCtx;
+}
+function playSound(type) {
+  if (!state.sound) return;
+  const ctx = ensureAudio();
+  if (!ctx) return;
+  if (ctx.state === 'suspended') ctx.resume();
+  const now = ctx.currentTime;
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.connect(gain); gain.connect(ctx.destination);
+  osc.type = 'sine';
+
+  if (type === 'correct') {
+    osc.frequency.setValueAtTime(523.25, now);
+    osc.frequency.setValueAtTime(659.25, now + 0.09);
+    osc.frequency.setValueAtTime(783.99, now + 0.18);
+    gain.gain.setValueAtTime(0.14, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+    osc.start(now); osc.stop(now + 0.4);
+  } else if (type === 'wrong') {
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(330, now);
+    osc.frequency.setValueAtTime(220, now + 0.14);
+    gain.gain.setValueAtTime(0.13, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+    osc.start(now); osc.stop(now + 0.4);
+  } else if (type === 'click') {
+    osc.type = 'square';
+    osc.frequency.setValueAtTime(880, now);
+    gain.gain.setValueAtTime(0.04, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+    osc.start(now); osc.stop(now + 0.1);
+  } else if (type === 'complete') {
+    const notes = [523.25, 659.25, 783.99, 1046.5];
+    notes.forEach((f, i) => {
+      const o = ctx.createOscillator();
+      const g = ctx.createGain();
+      o.connect(g); g.connect(ctx.destination);
+      o.type = 'sine';
+      o.frequency.setValueAtTime(f, now + i * 0.1);
+      g.gain.setValueAtTime(0.001, now + i * 0.1);
+      g.gain.linearRampToValueAtTime(0.14, now + i * 0.1 + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.001, now + i * 0.1 + 0.3);
+      o.start(now + i * 0.1); o.stop(now + i * 0.1 + 0.35);
+    });
+  }
+}
+
+/* ============================================================
+   СОСТОЯНИЕ
+   ============================================================ */
+const state = {
+  mode: 'fromDecimal',
+  base: 2,
+  level: 'easy',
+  sound: true,
+  timed: false,
+
+  taskNumber: 0,
+  checked: false,
+  taskStartTime: null,
+  timerInterval: null,
+  currentElapsed: 0,
+
+  // fromDecimal
+  currentBase: 2, target: null, correctSteps: [], lastDigit: 0,
+
+  // toDecimal
+  sourceBase: 2, sourceNumber: '', positions: [], decimal: 0,
+
+  // grouping
+  groupFromBase: 2, groupToBase: 8,
+  groupSourceNumber: '',
+  groupData: null,
+  groupAnswer: '',
+
+  bestTimes: {}, // key: `mode|level|base`
+};
+
+const stats = { solved: 0, perfect: 0, errors: 0 };
+
+/* ============================================================
+   СОХРАНЕНИЕ ПРОГРЕССА
+   ============================================================ */
+function saveToStorage() {
+  try {
+    const data = {
+      stats,
+      bestTimes: state.bestTimes,
+      settings: {
+        mode: state.mode,
+        base: state.base,
+        level: state.level,
+        sound: state.sound,
+        timed: state.timed,
+      },
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  } catch(e) {}
+}
+function loadFromStorage() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return;
+    const data = JSON.parse(raw);
+    if (data.stats) Object.assign(stats, data.stats);
+    if (data.bestTimes) state.bestTimes = data.bestTimes;
+    if (data.settings) {
+      if (data.settings.mode) state.mode = data.settings.mode;
+      if (data.settings.base !== undefined) state.base = data.settings.base;
+      if (data.settings.level) state.level = data.settings.level;
+      if (data.settings.sound !== undefined) state.sound = data.settings.sound;
+      if (data.settings.timed !== undefined) state.timed = data.settings.timed;
+    }
+  } catch(e) {}
+}
+function clearStorage() {
+  try { localStorage.removeItem(STORAGE_KEY); } catch(e) {}
+}
+
+/* ============================================================
+   ТАЙМЕР
+   ============================================================ */
+function startTimer() {
+  stopTimer();
+  state.taskStartTime = Date.now();
+  state.currentElapsed = 0;
+  updateTimerDisplay();
+  state.timerInterval = setInterval(() => {
+    state.currentElapsed = Date.now() - state.taskStartTime;
+    updateTimerDisplay();
+  }, 100);
+}
+function stopTimer() {
+  if (state.timerInterval) clearInterval(state.timerInterval);
+  state.timerInterval = null;
+}
+function updateTimerDisplay() {
+  if (!state.timed) return;
+  const ms = state.currentElapsed;
+  const min = Math.floor(ms / 60000);
+  const sec = Math.floor((ms % 60000) / 1000);
+  const tenth = Math.floor((ms % 1000) / 100);
+  $('timer-text').textContent =
+    String(min).padStart(2, '0') + ':' +
+    String(sec).padStart(2, '0') + '.' + tenth;
+}
+function formatTime(ms) {
+  const min = Math.floor(ms / 60000);
+  const sec = Math.floor((ms % 60000) / 1000);
+  const tenth = Math.floor((ms % 1000) / 100);
+  return String(min).padStart(2, '0') + ':' + String(sec).padStart(2, '0') + '.' + tenth;
+}
+function getBestTimeKey() {
+  return `${state.mode}|${state.level}|${state.base}`;
+}
+function updateBestTimeDisplay() {
+  const key = getBestTimeKey();
+  const best = state.bestTimes[key];
+  $('st-best').textContent = best ? formatTime(best) : '—';
+}
+function recordTime(ms) {
+  const key = getBestTimeKey();
+  const cur = state.bestTimes[key];
+  if (!cur || ms < cur) {
+    state.bestTimes[key] = ms;
+    saveToStorage();
+    return true;
+  }
+  return false;
+}
+
+/* ============================================================
+   ЛОГИКА ЗАДАЧ
+   ============================================================ */
+function computeCorrectData(target, base) {
+  const steps = [];
+  let n = target;
+  while (n >= base) {
+    const q = Math.floor(n / base);
+    const r = n % base;
+    steps.push({ dividend: n, quotient: q, remainder: r });
+    n = q;
+  }
+  return { steps, lastDigit: n };
+}
+
+/* ============================================================
+   НОВАЯ ЗАДАЧА — диспетчер
+   ============================================================ */
+function newTask() {
+  state.checked = false;
+  state.taskNumber++;
+
+  // Переключение блоков
+  $('mode-from-decimal').style.display = state.mode === 'fromDecimal' ? '' : 'none';
+  $('mode-to-decimal').style.display   = state.mode === 'toDecimal' ? '' : 'none';
+  $('mode-grouping').style.display     = state.mode === 'grouping' ? '' : 'none';
+
+  if (state.mode === 'fromDecimal') newFromDecimalTask();
+  else if (state.mode === 'toDecimal') newToDecimalTask();
+  else newGroupingTask();
+
+  hideGlobalFeedback();
+  $('check-btn').textContent = '✓ Проверить всё';
+  $('check-btn').disabled = false;
+  $('new-task-btn').disabled = false;
+  updateBestTimeDisplay();
+
+  if (state.timed) {
+    $('timer-display').classList.add('show');
+    startTimer();
+  } else {
+    $('timer-display').classList.remove('show');
+  }
+}
+
+/* ============================================================
+   РЕЖИМ 1: 10 → N
+   ============================================================ */
+function newFromDecimalTask() {
+  let base = state.base;
+  if (base === 'random') base = pick(BASES);
+  state.currentBase = base;
+
+  const range = LEVEL_RANGES[state.level];
+  const lo = Math.max(range.min, base);
+  const hi = Math.max(lo, range.max);
+  const target = randInt(lo, hi);
+  state.target = target;
+
+  const data = computeCorrectData(target, base);
+  state.correctSteps = data.steps;
+  state.lastDigit = data.lastDigit;
+
+  $('task-number').textContent = `Задача ${state.taskNumber}`;
+  $('task-badge').textContent = `Основание ${base}`;
+  $('task-badge').className = 'badge';
+  $('task-instruction').innerHTML =
+    `Переведите число <b>${target}</b> в <b>${getBaseName(base)}</b> систему счисления. Делите, пока делимое не станет меньше основания.`;
+
+  const container = $('steps');
+  container.innerHTML = '';
+  if (state.correctSteps.length > 0) {
+    container.appendChild(buildStolbik(0, target));
+  }
+  $('add-step-row').classList.remove('show');
+  $('answer-block').classList.remove('show');
+
+  const fa = $('final-answer');
+  fa.value = ''; fa.disabled = false;
+  fa.classList.remove('ok', 'err');
+  $('final-base').textContent = base;
+
+  if (state.correctSteps.length === 0) $('answer-block').classList.add('show');
+
+  updateFromDecimalUI();
+  setTimeout(() => {
+    const first = container.querySelector('.quotient-input');
+    if (first) first.focus(); else fa.focus();
+  }, 100);
+}
+
+function buildStolbik(index, dividend) {
+  const prefix = index === 0 ? '_' : '';
+  const wrap = document.createElement('div');
+  wrap.className = 'stolbik appearing';
+  wrap.dataset.index = index;
+  wrap.innerHTML = `
+    <div class="step-badge">Шаг ${index + 1}</div>
+    <div class="left-col">
+      <div class="cell dividend-cell">${prefix}${dividend}</div>
+      <div class="cell"><span class="product-text"></span></div>
+      <div class="hline"></div>
+      <div class="input-block">
+        <span class="mini-label r-color">остаток</span>
+        <input class="remainder-input" type="text" maxlength="1" autocomplete="off" spellcheck="false" placeholder="?">
+      </div>
+    </div>
+    <div class="right-col">
+      <div class="cell divisor-cell">${state.currentBase}</div>
+      <div class="hline"></div>
+      <div class="input-block">
+        <span class="mini-label q-color">частное</span>
+        <input class="quotient-input" type="text" maxlength="5" autocomplete="off" spellcheck="false" inputmode="numeric" placeholder="?">
+      </div>
+    </div>`;
+
+  const quoIn = wrap.querySelector('.quotient-input');
+  const remIn = wrap.querySelector('.remainder-input');
+  quoIn.addEventListener('input', () => {
+    quoIn.value = quoIn.value.replace(/\D/g, '');
+    quoIn.classList.remove('err', 'ok');
+    syncNextDividend(index);
+    updateFromDecimalUI();
+  });
+  remIn.addEventListener('input', () => {
+    let v = remIn.value.toUpperCase().replace(/[^0-9A-F]/g, '');
+    if (v.length > 1) v = v.slice(0, 1);
+    remIn.value = v;
+    remIn.classList.remove('err', 'ok');
+    updateFromDecimalUI();
+  });
+  quoIn.addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); remIn.focus(); }
+  });
+  remIn.addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); $('check-btn').focus(); }
+  });
+  return wrap;
+}
+
+function syncNextDividend(index) {
+  const wrap = document.querySelector(`.stolbik[data-index="${index}"]`);
+  if (!wrap) return;
+  const nextWrap = document.querySelector(`.stolbik[data-index="${index + 1}"]`);
+  if (!nextWrap) return;
+  const qVal = parseInt(wrap.querySelector('.quotient-input').value, 10);
+  if (!isNaN(qVal)) {
+    const cell = nextWrap.querySelector('.dividend-cell');
+    if (cell) cell.textContent = qVal;
+  }
+}
+
+function updateFromDecimalUI() {
+  if (state.checked) return;
+  const wraps = document.querySelectorAll('.stolbik');
+  if (wraps.length === 0) {
+    $('add-step-row').classList.remove('show');
+    $('answer-block').classList.add('show');
+    return;
+  }
+  const lastWrap = wraps[wraps.length - 1];
+  const qNum = lastWrap.querySelector('.quotient-input').value.trim() === ''
+    ? null : parseInt(lastWrap.querySelector('.quotient-input').value, 10);
+  const hasR = lastWrap.querySelector('.remainder-input').value.trim() !== '';
+  if (qNum === null || !hasR) {
+    $('add-step-row').classList.remove('show');
+    $('answer-block').classList.remove('show');
+    return;
+  }
+  if (qNum >= state.currentBase) {
+    $('add-step-row').classList.add('show');
+    $('answer-block').classList.remove('show');
+  } else {
+    $('add-step-row').classList.remove('show');
+    $('answer-block').classList.add('show');
+  }
+}
+
+function addNextStep() {
+  if (state.checked) return;
+  const wraps = document.querySelectorAll('.stolbik');
+  const lastWrap = wraps[wraps.length - 1];
+  if (!lastWrap) return;
+  const qNum = parseInt(lastWrap.querySelector('.quotient-input').value, 10);
+  if (isNaN(qNum) || qNum < state.currentBase) return;
+  const newWrap = buildStolbik(wraps.length, qNum);
+  $('steps').appendChild(newWrap);
+  updateFromDecimalUI();
+  setTimeout(() => {
+    newWrap.scrollIntoView({ behavior:'smooth', block:'nearest' });
+    newWrap.querySelector('.quotient-input').focus();
+  }, 100);
+}
+
+function buildCorrectAnswer() {
+  const rr = state.correctSteps.map(s => DIGITS[s.remainder]).reverse().join('');
+  return DIGITS[state.lastDigit] + rr;
+}
+
+/* ============================================================
+   РЕЖИМ 2: N → 10
+   ============================================================ */
+function newToDecimalTask() {
+  let base = state.base;
+  if (base === 'random') base = pick(BASES);
+  state.sourceBase = base;
+
+  const [minLen, maxLen] = LENGTH_RANGES[state.level];
+  const len = randInt(minLen, maxLen);
+
+  const digits = [];
+  for (let i = 0; i < len; i++) {
+    digits.push(i === 0 ? randInt(1, base - 1) : randInt(0, base - 1));
+  }
+  state.sourceNumber = digits.map(d => DIGITS[d]).join('');
+
+  state.positions = [];
+  const n = digits.length;
+  for (let i = 0; i < n; i++) {
+    const pos = n - 1 - i;
+    const digit = digits[i];
+    const weight = Math.pow(base, pos);
+    state.positions.push({ pos, digit, weight, term: digit * weight });
+  }
+  state.decimal = state.positions.reduce((s, p) => s + p.term, 0);
+
+  $('task-number').textContent = `Задача ${state.taskNumber}`;
+  $('task-badge').textContent = `Из основания ${base}`;
+  $('task-badge').className = 'badge green';
+  $('task-instruction').innerHTML =
+    `Переведите число <b>${state.sourceNumber}<sub>${base}</sub></b> в десятичную систему. Заполните вес и значение каждого разряда.`;
+
+  renderWeights();
+
+  const si = $('sum-input');
+  si.value = ''; si.disabled = false;
+  si.classList.remove('ok', 'err');
+  setTimeout(() => {
+    const first = document.querySelector('.weight-input');
+    if (first) first.focus();
+  }, 100);
+}
+
+function renderWeights() {
+  const container = $('weights-container');
+  container.innerHTML = '';
+  state.positions.forEach((p, i) => {
+    const block = document.createElement('div');
+    block.className = 'digit-block';
+    block.dataset.index = i;
+    block.style.animationDelay = (i * 0.06) + 's';
+    block.innerHTML = `
+      <div class="block-row">
+        <span class="mini-label2 pos">Разряд</span>
+        <span class="pos-value">${p.pos}</span>
+      </div>
+      <div class="block-row">
+        <span class="mini-label2 dig">Цифра</span>
+        <span class="digit-value">${DIGITS[p.digit]}</span>
+      </div>
+      <div class="block-row">
+        <span class="mini-label2 w">Вес</span>
+        <input class="weight-input" type="text" inputmode="numeric" autocomplete="off" placeholder="?" maxlength="6">
+      </div>
+      <div class="block-row">
+        <span class="mini-label2 t">Знач.</span>
+        <input class="term-input" type="text" inputmode="numeric" autocomplete="off" placeholder="?" maxlength="7">
+      </div>`;
+    const wIn = block.querySelector('.weight-input');
+    const tIn = block.querySelector('.term-input');
+    wIn.addEventListener('input', () => {
+      wIn.value = wIn.value.replace(/\D/g, '');
+      wIn.classList.remove('ok', 'err');
+      block.classList.remove('correct', 'wrong');
+    });
+    tIn.addEventListener('input', () => {
+      tIn.value = tIn.value.replace(/\D/g, '');
+      tIn.classList.remove('ok', 'err');
+      block.classList.remove('correct', 'wrong');
+    });
+    wIn.addEventListener('keydown', e => {
+      if (e.key === 'Enter') { e.preventDefault(); tIn.focus(); }
+    });
+    tIn.addEventListener('keydown', e => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        const nextBlock = document.querySelector(`.digit-block[data-index="${i + 1}"]`);
+        if (nextBlock) nextBlock.querySelector('.weight-input').focus();
+        else $('sum-input').focus();
+      }
+    });
+    container.appendChild(block);
+  });
+}
+
+/* ============================================================
+   РЕЖИМ 3: ГРУППИРОВКА 2 ↔ 8 ↔ 16
+   ============================================================ */
+function newGroupingTask() {
+  let fromBase = state.base;
+  if (fromBase === 'random') fromBase = pick([2, 8, 16]);
+
+  let toBase;
+  if (fromBase === 2) toBase = pick([8, 16]);
+  else toBase = 2;
+
+  state.groupFromBase = fromBase;
+  state.groupToBase = toBase;
+  state.groupData = {};
+
+  if (fromBase === 2) {
+    // 2 → 8/16
+    const groupSize = toBase === 8 ? 3 : 4;
+    const numGroups = randInt(2, 4);
+    const totalBits = groupSize * numGroups;
+
+    // Генерируем биты
+    let bits = '1';
+    for (let i = 1; i < totalBits; i++) bits += Math.random() < 0.5 ? '0' : '1';
+    state.groupSourceNumber = bits;
+
+    // Группы справа налево
+    const groups = [];
+    for (let i = bits.length; i > 0; i -= groupSize) {
+      groups.unshift(bits.slice(Math.max(0, i - groupSize), i));
+    }
+    state.groupData.groups = groups;
+    state.groupData.groupAnswers = groups.map(g => parseInt(g, 2));
+    state.groupAnswer = state.groupData.groupAnswers.map(a => DIGITS[a]).join('');
+
+    $('grouping-hint').innerHTML = `Прочитайте цифры слева направо — это ответ в ${toBase}-й системе:`;
+  } else {
+    // 8/16 → 2
+    const groupSize = fromBase === 8 ? 3 : 4;
+    const numDigits = randInt(2, 4);
+    const digits = [randInt(1, fromBase - 1)];
+    for (let i = 1; i < numDigits; i++) digits.push(randInt(0, fromBase - 1));
+
+    state.groupSourceNumber = digits.map(d => DIGITS[d]).join('');
+    state.groupData.digits = digits;
+    state.groupData.digitBits = digits.map(d => d.toString(2).padStart(groupSize, '0'));
+
+    // Итоговая строка без ведущих нулей
+    const full = state.groupData.digitBits.join('');
+    state.groupAnswer = full.replace(/^0+/, '') || '0';
+    state.groupData.fullBinary = full;
+
+    $('grouping-hint').innerHTML = `Запишите итоговое двоичное число (можно с ведущими нулями или без):`;
+  }
+
+  $('task-number').textContent = `Задача ${state.taskNumber}`;
+  $('task-badge').textContent = `${fromBase} → ${toBase}`;
+  $('task-badge').className = 'badge orange';
+  $('task-instruction').innerHTML =
+    `Переведите число <b>${state.groupSourceNumber}<sub>${fromBase}</sub></b> в <b>${toBase}-ю</b> систему, используя группировку битов.`;
+
+  renderGrouping();
+  $('grouping-base-tag').textContent = toBase;
+
+  const ga = $('grouping-answer');
+  ga.value = ''; ga.disabled = false;
+  ga.classList.remove('ok', 'err');
+  ga.maxLength = 20;
+
+  setTimeout(() => {
+    const first = document.querySelector('.group-digit-input, .bit-input');
+    if (first) first.focus();
+  }, 100);
+}
+
+function renderGrouping() {
+  const container = $('grouping-container');
+  container.innerHTML = '';
+
+  if (state.groupFromBase === 2) {
+    // 2 → 8/16
+    const groupSize = state.groupToBase === 8 ? 3 : 4;
+    const groups = state.groupData.groups;
+
+    // Строка 1: исходные биты
+    const srcRow = document.createElement('div');
+    srcRow.className = 'grouping-row';
+    srcRow.innerHTML = `<div class="grouping-label">Исходное число (осн. 2)</div>
+      <div class="source-bits">${[...state.groupSourceNumber].map(b => `<span class="source-bit">${b}</span>`).join('')}</div>`;
+    container.appendChild(srcRow);
+
+    // Строка 2: группы
+    const gRow = document.createElement('div');
+    gRow.className = 'grouping-row';
+    gRow.innerHTML = `<div class="grouping-label">Группы справа налево по ${groupSize} бита</div>
+      <div class="groups-row"></div>`;
+    const groupsRow = gRow.querySelector('.groups-row');
+
+    groups.forEach((g, i) => {
+      const card = document.createElement('div');
+      card.className = 'group-card';
+      card.dataset.index = i;
+      card.style.animationDelay = (i * 0.08) + 's';
+      card.innerHTML = `
+        <div class="group-bits">${g}</div>
+        <div class="group-arrow">↓</div>
+        <input class="group-digit-input" type="text" maxlength="1" autocomplete="off" placeholder="?">
+      `;
+      const inp = card.querySelector('.group-digit-input');
+      inp.addEventListener('input', () => {
+        let v = inp.value.toUpperCase().replace(/[^0-9A-F]/g, '');
+        if (v.length > 1) v = v.slice(0, 1);
+        inp.value = v;
+        inp.classList.remove('ok', 'err');
+        card.classList.remove('correct', 'wrong');
+      });
+      inp.addEventListener('keydown', e => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          const next = document.querySelector(`.group-card[data-index="${i + 1}"] .group-digit-input`);
+          if (next) next.focus(); else $('grouping-answer').focus();
+        }
+      });
+      groupsRow.appendChild(card);
+    });
+    container.appendChild(gRow);
+
+  } else {
+    // 8/16 → 2
+    const groupSize = state.groupFromBase === 8 ? 3 : 4;
+    const digits = state.groupData.digits;
+    const digitBits = state.groupData.digitBits;
+
+    // Строка 1: исходные цифры
+    const srcRow = document.createElement('div');
+    srcRow.className = 'grouping-row';
+    srcRow.innerHTML = `<div class="grouping-label">Исходное число (осн. ${state.groupFromBase})</div>
+      <div class="source-digits">${digits.map(d => `<span class="source-digit">${DIGITS[d]}</span>`).join('')}</div>`;
+    container.appendChild(srcRow);
+
+    // Строка 2: карточки для битов
+    const bRow = document.createElement('div');
+    bRow.className = 'grouping-row';
+    bRow.innerHTML = `<div class="grouping-label">Каждая цифра → ${groupSize} бита</div>
+      <div class="bit-cards"></div>`;
+    const cardsContainer = bRow.querySelector('.bit-cards');
+
+    digits.forEach((d, i) => {
+      const card = document.createElement('div');
+      card.className = 'bit-card';
+      card.dataset.index = i;
+      card.style.animationDelay = (i * 0.08) + 's';
+      card.innerHTML = `
+        <div class="bit-card-digit">${DIGITS[d]}</div>
+        <div class="group-arrow">↓</div>
+        <input class="bit-input" type="text" maxlength="${groupSize}" autocomplete="off" placeholder="?">
+      `;
+      const inp = card.querySelector('.bit-input');
+      inp.addEventListener('input', () => {
+        inp.value = inp.value.replace(/[^01]/g, '');
+        inp.classList.remove('ok', 'err');
+        card.classList.remove('correct', 'wrong');
+      });
+      inp.addEventListener('keydown', e => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          const next = document.querySelector(`.bit-card[data-index="${i + 1}"] .bit-input`);
+          if (next) next.focus(); else $('grouping-answer').focus();
+        }
+      });
+      cardsContainer.appendChild(card);
+    });
+    container.appendChild(bRow);
+  }
+}
+
+/* ============================================================
+   ПРОВЕРКА
+   ============================================================ */
+function checkAll() {
+  if (state.checked) { newTask(); return; }
+  if (state.mode === 'fromDecimal') checkFromDecimal();
+  else if (state.mode === 'toDecimal') checkToDecimal();
+  else checkGrouping();
+}
+
+function completeTask() {
+  state.checked = true;
+  stats.solved++; stats.perfect++; updateStats();
+  saveToStorage();
+
+  if (state.timed && state.taskStartTime) {
+    const elapsed = Date.now() - state.taskStartTime;
+    stopTimer();
+    const isBest = recordTime(elapsed);
+    if (isBest) {
+      showGlobalFeedback(`🎉 Всё верно! 🏆 Новый рекорд: ${formatTime(elapsed)}`, 'ok');
+    } else {
+      showGlobalFeedback(`🎉 Всё верно! Ваше время: ${formatTime(elapsed)}`, 'ok');
+    }
+    updateBestTimeDisplay();
+  } else {
+    showGlobalFeedback('🎉 Всё верно! Отличная работа!', 'ok');
+  }
+
+  playSound('complete');
+  $('check-btn').textContent = '➡️ Следующая задача';
+  document.querySelectorAll('input').forEach(inp => inp.disabled = true);
+  $('add-step-row').classList.remove('show');
+}
+
+function failTask(n) {
+  stats.errors += n; updateStats(); saveToStorage();
+  playSound('wrong');
+}
+
+function checkFromDecimal() {
+  const base = state.currentBase;
+  const wrapAll = document.querySelectorAll('.stolbik');
+  const studentData = [];
+  let allFilled = true;
+
+  wrapAll.forEach(wrap => {
+    const quoIn = wrap.querySelector('.quotient-input');
+    const remIn = wrap.querySelector('.remainder-input');
+    const qVal = quoIn.value.trim() === '' ? null : parseInt(quoIn.value.trim(), 10);
+    const rRaw = remIn.value.trim().toUpperCase();
+    const rVal = rRaw === '' ? null : DIGITS.indexOf(rRaw);
+    if (qVal === null || rVal === null) allFilled = false;
+    studentData.push({ wrap, quoIn, remIn, qVal, rVal });
+  });
+
+  const fa = $('final-answer');
+  const correctAnswer = buildCorrectAnswer();
+  const userAnswer = fa.value.trim().toUpperCase().replace(/\s+/g, '');
+  const faFilled = userAnswer !== '';
+
+  if (!allFilled || !faFilled) {
+    showGlobalFeedback('⚠️ Заполните все поля: частное и остаток в каждом столбике, а также итоговый ответ.', 'warn');
+    return;
+  }
+
+  let stepErrors = 0;
+  const moreSteps = studentData.length > state.correctSteps.length;
+  const fewerSteps = studentData.length < state.correctSteps.length;
+  const minLen = Math.min(studentData.length, state.correctSteps.length);
+
+  for (let i = 0; i < minLen; i++) {
+    const st = studentData[i], cor = state.correctSteps[i];
+    let ok = true;
+    if (st.qVal === cor.quotient) { st.quoIn.classList.remove('err'); st.quoIn.classList.add('ok'); }
+    else { st.quoIn.classList.remove('ok'); st.quoIn.classList.add('err'); ok = false; }
+    if (st.rVal === cor.remainder) { st.remIn.classList.remove('err'); st.remIn.classList.add('ok'); }
+    else { st.remIn.classList.remove('ok'); st.remIn.classList.add('err'); ok = false; }
+    if (ok) {
+      st.wrap.classList.remove('wrong'); st.wrap.classList.add('correct');
+      st.wrap.querySelector('.product-text').textContent = cor.quotient * base;
+    } else {
+      st.wrap.classList.remove('correct'); st.wrap.classList.add('wrong');
+      stepErrors++;
+    }
+  }
+  for (let i = state.correctSteps.length; i < studentData.length; i++) {
+    const st = studentData[i];
+    st.quoIn.classList.remove('ok'); st.quoIn.classList.add('err');
+    st.remIn.classList.remove('ok'); st.remIn.classList.add('err');
+    st.wrap.classList.remove('correct'); st.wrap.classList.add('wrong');
+  }
+
+  const faOk = userAnswer === correctAnswer;
+  fa.classList.toggle('ok', faOk);
+  fa.classList.toggle('err', !faOk);
+
+  const errParts = [];
+  if (moreSteps) errParts.push('лишние шаги деления');
+  if (fewerSteps) errParts.push('не все шаги выполнены');
+  if (stepErrors > 0) errParts.push('ошибки в столбиках');
+  if (!faOk) errParts.push('неверный итоговый ответ');
+
+  if (errParts.length === 0) completeTask();
+  else { failTask(errParts.length); showGlobalFeedback('❌ ' + errParts.join(', ') + '. Проверьте красные поля.', 'bad'); }
+}
+
+function checkToDecimal() {
+  const blocks = document.querySelectorAll('.digit-block');
+  const si = $('sum-input');
+  let allFilled = true, blockErrors = 0;
+
+  state.positions.forEach((p, i) => {
+    const block = blocks[i]; if (!block) return;
+    const wIn = block.querySelector('.weight-input');
+    const tIn = block.querySelector('.term-input');
+    const wVal = wIn.value.trim() === '' ? null : parseInt(wIn.value, 10);
+    const tVal = tIn.value.trim() === '' ? null : parseInt(tIn.value, 10);
+    if (wVal === null || tVal === null) { allFilled = false; return; }
+    const wOk = wVal === p.weight, tOk = tVal === p.term;
+    wIn.classList.toggle('ok', wOk); wIn.classList.toggle('err', !wOk);
+    tIn.classList.toggle('ok', tOk); tIn.classList.toggle('err', !tOk);
+    if (wOk && tOk) { block.classList.remove('wrong'); block.classList.add('correct'); }
+    else { block.classList.remove('correct'); block.classList.add('wrong'); blockErrors++; }
+  });
+
+  const sumVal = si.value.trim() === '' ? null : parseInt(si.value, 10);
+  const sumFilled = sumVal !== null;
+  const sumOk = sumVal === state.decimal;
+  si.classList.toggle('ok', sumOk && sumFilled);
+  si.classList.toggle('err', sumFilled && !sumOk);
+
+  if (!allFilled || !sumFilled) {
+    showGlobalFeedback('⚠️ Заполните вес и значение для каждого разряда, а также итоговую сумму.', 'warn');
+    return;
+  }
+
+  const errParts = [];
+  if (blockErrors > 0) errParts.push('ошибки в весах или значениях');
+  if (!sumOk) errParts.push('неверная сумма');
+
+  if (errParts.length === 0) completeTask();
+  else { failTask(errParts.length); showGlobalFeedback('❌ ' + errParts.join(', ') + '. Проверьте красные поля.', 'bad'); }
+}
+
+function checkGrouping() {
+  const ga = $('grouping-answer');
+  const userAnswer = ga.value.trim().toUpperCase().replace(/\s+/g, '');
+  if (userAnswer === '') {
+    showGlobalFeedback('⚠️ Введите итоговый ответ.', 'warn');
+    return;
+  }
+
+  let blockErrors = 0;
+  let allFilled = true;
+
+  if (state.groupFromBase === 2) {
+    // 2 → 8/16: у каждой группы свой инпут
+    const cards = document.querySelectorAll('.group-card');
+    state.groupData.groupAnswers.forEach((ans, i) => {
+      const card = cards[i]; if (!card) return;
+      const inp = card.querySelector('.group-digit-input');
+      const v = inp.value.toUpperCase().trim();
+      if (v === '') { allFilled = false; return; }
+      const vVal = DIGITS.indexOf(v);
+      if (vVal === ans) {
+        inp.classList.remove('err'); inp.classList.add('ok');
+        card.classList.remove('wrong'); card.classList.add('correct');
+      } else {
+        inp.classList.remove('ok'); inp.classList.add('err');
+        card.classList.remove('correct'); card.classList.add('wrong');
+        blockErrors++;
+      }
+    });
+  } else {
+    // 8/16 → 2: у каждой цифры свой bit-input
+    const cards = document.querySelectorAll('.bit-card');
+    state.groupData.digitBits.forEach((bits, i) => {
+      const card = cards[i]; if (!card) return;
+      const inp = card.querySelector('.bit-input');
+      const v = inp.value.trim();
+      if (v === '') { allFilled = false; return; }
+      // Разрешаем без ведущих нулей
+      const normalized = v.padStart(bits.length, '0');
+      if (normalized === bits) {
+        inp.classList.remove('err'); inp.classList.add('ok');
+        card.classList.remove('wrong'); card.classList.add('correct');
+      } else {
+        inp.classList.remove('ok'); inp.classList.add('err');
+        card.classList.remove('correct'); card.classList.add('wrong');
+        blockErrors++;
+      }
+    });
+  }
+
+  // Проверка итогового ответа
+  const correctNorm = state.groupAnswer.replace(/^0+/, '') || '0';
+  const userNorm = userAnswer.replace(/^0+/, '') || '0';
+  const finalOk = correctNorm === userNorm;
+  ga.classList.toggle('ok', finalOk);
+  ga.classList.toggle('err', !finalOk);
+
+  if (!allFilled) {
+    showGlobalFeedback('⚠️ Заполните все поля.', 'warn');
+    return;
+  }
+
+  const errParts = [];
+  if (blockErrors > 0) errParts.push('ошибки в разбивке');
+  if (!finalOk) errParts.push('неверный итоговый ответ');
+
+  if (errParts.length === 0) completeTask();
+  else { failTask(errParts.length); showGlobalFeedback('❌ ' + errParts.join(', ') + '. Проверьте красные поля.', 'bad'); }
+}
+
+/* ============================================================
+   ФИДБЭК
+   ============================================================ */
+function showGlobalFeedback(text, cls) {
+  const el = $('global-feedback');
+  el.textContent = text;
+  el.className = 'global-feedback show ' + cls;
+}
+function hideGlobalFeedback() {
+  const el = $('global-feedback');
+  el.className = 'global-feedback';
+  el.textContent = '';
+}
+
+function updateStats() {
+  $('st-solved').textContent = stats.solved;
+  $('st-perfect').textContent = stats.perfect;
+  $('st-errors').textContent = stats.errors;
+}
+
+/* ============================================================
+   ФИЛЬТРЫ ВВОДА
+   ============================================================ */
+$('final-answer').addEventListener('input', e => {
+  const base = state.currentBase;
+  const valid = DIGITS.slice(0, base);
+  let v = e.target.value.toUpperCase().replace(/\s+/g, '');
+  v = v.split('').filter(c => valid.includes(c)).join('');
+  e.target.value = v;
+  e.target.classList.remove('err');
+});
+$('final-answer').addEventListener('keydown', e => {
+  if (e.key === 'Enter') { e.preventDefault(); checkAll(); }
+});
+
+$('sum-input').addEventListener('input', e => {
+  e.target.value = e.target.value.replace(/\D/g, '');
+  e.target.classList.remove('err');
+});
+$('sum-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') { e.preventDefault(); checkAll(); }
+});
+
+$('grouping-answer').addEventListener('input', e => {
+  const base = state.groupToBase;
+  const valid = DIGITS.slice(0, base);
+  let v = e.target.value.toUpperCase().replace(/\s+/g, '');
+  v = v.split('').filter(c => valid.includes(c)).join('');
+  e.target.value = v;
+  e.target.classList.remove('err');
+});
+$('grouping-answer').addEventListener('keydown', e => {
+  if (e.key === 'Enter') { e.preventDefault(); checkAll(); }
+});
+
+/* ============================================================
+   ОБРАБОТЧИКИ
+   ============================================================ */
+$('check-btn').addEventListener('click', checkAll);
+$('new-task-btn').addEventListener('click', () => { playSound('click'); newTask(); });
+$('add-step-btn').addEventListener('click', () => { playSound('click'); addNextStep(); });
+
+$('reset-btn').addEventListener('click', () => {
+  if (!confirm('Сбросить всю статистику и рекорды?')) return;
+  stats.solved = 0; stats.perfect = 0; stats.errors = 0;
+  state.taskNumber = 0;
+  state.bestTimes = {};
+  clearStorage();
+  updateStats();
+  updateBestTimeDisplay();
+  newTask();
+});
+
+/* Режим */
+document.querySelectorAll('[data-mode]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('[data-mode]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    state.mode = btn.dataset.mode;
+    state.taskNumber = 0;
+    saveToStorage();
+    playSound('click');
+    newTask();
+  });
+});
+
+/* Основание */
+document.querySelectorAll('[data-base]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('[data-base]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const v = btn.dataset.base;
+    state.base = v === 'random' ? 'random' : parseInt(v, 10);
+    saveToStorage();
+    playSound('click');
+    newTask();
+  });
+});
+
+/* Уровень */
+document.querySelectorAll('[data-level]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('[data-level]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    state.level = btn.dataset.level;
+    saveToStorage();
+    playSound('click');
+    newTask();
+  });
+});
+
+/* Инструменты шапки */
+$('sound-btn').addEventListener('click', () => {
+  state.sound = !state.sound;
+  $('sound-btn').classList.toggle('active', state.sound);
+  $('sound-btn').classList.toggle('off', !state.sound);
+  $('sound-btn').textContent = state.sound ? '🔊' : '🔇';
+  $('sound-btn').title = state.sound ? 'Звук: вкл' : 'Звук: выкл';
+  if (state.sound) playSound('click');
+  saveToStorage();
+});
+
+$('timer-btn').addEventListener('click', () => {
+  state.timed = !state.timed;
+  $('timer-btn').classList.toggle('active', state.timed);
+  $('timer-btn').classList.toggle('off', !state.timed);
+  $('timer-btn').title = state.timed ? 'Таймер: вкл' : 'Таймер: выкл';
+  playSound('click');
+  saveToStorage();
+  if (state.timed) {
+    $('timer-display').classList.add('show');
+    startTimer();
+  } else {
+    $('timer-display').classList.remove('show');
+    stopTimer();
+  }
+});
+
+$('print-btn').addEventListener('click', () => {
+  playSound('click');
+  window.print();
+});
+
+$('export-btn').addEventListener('click', () => {
+  playSound('click');
+  const data = {
+    exportedAt: new Date().toISOString(),
+    stats,
+    bestTimes: state.bestTimes,
+    settings: {
+      mode: state.mode, base: state.base,
+      level: state.level, sound: state.sound, timed: state.timed,
+    },
+    bestTimesHuman: Object.fromEntries(
+      Object.entries(state.bestTimes).map(([k, v]) => [k, formatTime(v)])
+    ),
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `trainer-stats-${new Date().toISOString().slice(0, 10)}.json`;
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showGlobalFeedback('📥 Статистика сохранена в файл', 'ok');
+  setTimeout(hideGlobalFeedback, 2500);
+});
+
+/* Вкладки */
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    tab.classList.add('active');
+    $('view-' + tab.dataset.view).classList.add('active');
+  });
+});
+
+/* Таблица */
+(function buildTable() {
+  const tbody = $('conv-table-body');
+  let html = '';
+  for (let i = 0; i < 16; i++) {
+    html += `<tr>
+      <td>${i}</td>
+      <td>${i.toString(2).padStart(4, '0')}</td>
+      <td>${i.toString(8)}</td>
+      <td>${i.toString(16).toUpperCase()}</td>
+    </tr>`;
+  }
+  tbody.innerHTML = html;
+})();
+
+/* ============================================================
+   ВОССТАНОВЛЕНИЕ СОСТОЯНИЯ И СТАРТ
+   ============================================================ */
+(function restore() {
+  loadFromStorage();
+
+  // Применить сохранённые настройки к UI
+  document.querySelectorAll('[data-mode]').forEach(b => {
+    b.classList.toggle('active', b.dataset.mode === state.mode);
+  });
+  document.querySelectorAll('[data-base]').forEach(b => {
+    const v = state.base === 'random' ? 'random' : String(state.base);
+    b.classList.toggle('active', b.dataset.base === v);
+  });
+  document.querySelectorAll('[data-level]').forEach(b => {
+    b.classList.toggle('active', b.dataset.level === state.level);
+  });
+
+  // Кнопка звука
+  $('sound-btn').classList.toggle('active', state.sound);
+  $('sound-btn').classList.toggle('off', !state.sound);
+  $('sound-btn').textContent = state.sound ? '🔊' : '🔇';
+
+  // Кнопка таймера
+  $('timer-btn').classList.toggle('active', state.timed);
+  $('timer-btn').classList.toggle('off', !state.timed);
+  if (state.timed) $('timer-display').classList.add('show');
+})();
+
+updateStats();
+updateBestTimeDisplay();
+newTask();
+</script>
+</body>
+</html>
